@@ -1,6 +1,6 @@
 # Sanskrit Keyboards for Android
 
-Six custom Android keyboards for typing Sanskrit. Pick whichever matches your habits — they coexist, you enable each one separately in Settings, and switch between them with the 🌐 globe key.
+Six custom Android keyboards for typing Sanskrit. Pick whichever matches your habits — they coexist, you enable each one separately in Settings, and switch between them by tapping the 🌐 globe key (hold it to open the system keyboard picker).
 
 This is a port of [Sanskrit-iOS-Keyboard](https://github.com/jiacheng-thermetery/Sanskrit-iOS-Keyboard). The transliteration tables, key layouts, popover behaviour and keyboard geometry are ported one-for-one; see [Differences from the iOS version](#differences-from-the-ios-version) for the handful of places where Android's input APIs made a different choice correct.
 
@@ -28,6 +28,13 @@ After install:
 1. Settings → System → Languages & input → On-screen keyboard → **Manage keyboards**
 2. Turn on any of **IAST**, **HK → IAST**, **HK → Devanāgarī**, **IAST → Devanāgarī**, **Velthuis → IAST**, **Velthuis → Devanāgarī** (enable as many as you want).
 3. In any text field, tap the keyboard-switch button in the navigation bar — or the 🌐 globe key on one of these keyboards — and pick the one you want.
+
+### The globe key
+
+- **Tap** — rotate to the next input method.
+- **Press and hold** — open the system keyboard picker.
+
+Hold it when you want to get back to Gboard (or any other keyboard). Because this package installs six separate input methods, tapping the globe usually just lands on the next Sanskrit keyboard; the picker jumps straight to whichever keyboard you want.
 
 The **Sanskrit Keyboards** app itself has buttons for both steps, plus cheatsheets and a scratch field to try things in.
 

@@ -38,9 +38,11 @@ class KeyboardViewTest {
         val inserted = mutableListOf<String>()
         var deletes = 0
         var advances = 0
+        var pickerRequests = 0
         override fun onInsertText(view: KeyboardView, text: String) { inserted += text }
         override fun onDeleteBackward(view: KeyboardView) { deletes++ }
         override fun onAdvanceToNextInputMode(view: KeyboardView) { advances++ }
+        override fun onShowInputMethodPicker(view: KeyboardView) { pickerRequests++ }
     }
 
     private fun build(
@@ -164,6 +166,37 @@ class KeyboardViewTest {
         shadowOf(Looper.getMainLooper()).idleFor(
             java.time.Duration.ofMillis(500)
         )
+    }
+
+    /**
+     * The package ships six input methods, so a globe tap normally rotates
+     * within them. Long-pressing must open the system picker — otherwise there
+     * is no way to reach a keyboard outside this package.
+     */
+    @Test
+    fun longPressingTheGlobeOpensTheInputMethodPicker() {
+        val (view, delegate) = build(HkLayout)
+        val globe = keys(view)
+            .first { it.definition.kind == com.thermetery.sanskritkeyboards.core.KeyKind.NEXT_KEYBOARD }
+
+        pressAndHold(globe)
+        assertEquals(1, delegate.pickerRequests)
+
+        // Releasing after the long press must NOT also rotate the keyboard.
+        globe.onTouchEvent(
+            MotionEvent.obtain(0, 30, MotionEvent.ACTION_UP, globe.width / 2f, globe.height / 2f, 0)
+        )
+        assertEquals("release after long-press also switched keyboards", 0, delegate.advances)
+    }
+
+    @Test
+    fun aQuickGlobeTapStillRotatesToTheNextInputMethod() {
+        val (view, delegate) = build(HkLayout)
+        val globe = keys(view)
+            .first { it.definition.kind == com.thermetery.sanskritkeyboards.core.KeyKind.NEXT_KEYBOARD }
+        tap(globe)
+        assertEquals(1, delegate.advances)
+        assertEquals("a quick tap should not open the picker", 0, delegate.pickerRequests)
     }
 
     @Test

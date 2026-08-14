@@ -52,6 +52,10 @@ class KeyButton(
     private val handler = Handler(Looper.getMainLooper())
     private var alternatesRunnable: Runnable? = null
     private var backspaceRunnable: Runnable? = null
+    private var pickerRunnable: Runnable? = null
+
+    /** True once the globe long-press has opened the picker this gesture. */
+    private var pickerShown = false
 
     private val density = resources.displayMetrics.density
     private val cornerRadius = 5f * density
@@ -131,6 +135,10 @@ class KeyButton(
                 if (definition.kind == KeyKind.BACKSPACE) {
                     delegate?.onKeyAction(this, KeyAction.Backspace)
                     scheduleBackspaceRepeat()
+                } else if (definition.kind == KeyKind.NEXT_KEYBOARD) {
+                    // Holding the globe opens the system picker, which is the
+                    // only way to reach a keyboard outside this package.
+                    schedulePickerTimer()
                 } else if (definition.alternates.isNotEmpty()) {
                     scheduleAlternatesTimer()
                 }
@@ -150,7 +158,15 @@ class KeyButton(
             MotionEvent.ACTION_UP -> {
                 cancelAlternatesTimer()
                 cancelBackspaceRepeat()
+                cancelPickerTimer()
                 keyPressed = false
+
+                if (pickerShown) {
+                    // The picker already opened on the long press; releasing
+                    // must not also switch keyboards.
+                    pickerShown = false
+                    return true
+                }
 
                 if (popoverShowing) {
                     popoverShowing = false
@@ -176,6 +192,8 @@ class KeyButton(
             MotionEvent.ACTION_CANCEL -> {
                 cancelAlternatesTimer()
                 cancelBackspaceRepeat()
+                cancelPickerTimer()
+                pickerShown = false
                 keyPressed = false
                 if (popoverShowing) {
                     popoverShowing = false
@@ -203,6 +221,22 @@ class KeyButton(
     private fun cancelAlternatesTimer() {
         alternatesRunnable?.let { handler.removeCallbacks(it) }
         alternatesRunnable = null
+    }
+
+    private fun schedulePickerTimer() {
+        cancelPickerTimer()
+        val r = Runnable {
+            pickerShown = true
+            keyPressed = false
+            delegate?.onKeyAction(this, KeyAction.ShowInputMethodPicker)
+        }
+        pickerRunnable = r
+        handler.postDelayed(r, 400L)
+    }
+
+    private fun cancelPickerTimer() {
+        pickerRunnable?.let { handler.removeCallbacks(it) }
+        pickerRunnable = null
     }
 
     private fun scheduleBackspaceRepeat() {
@@ -233,6 +267,7 @@ class KeyButton(
         super.onDetachedFromWindow()
         cancelAlternatesTimer()
         cancelBackspaceRepeat()
+        cancelPickerTimer()
     }
 
     private fun fireAction() {

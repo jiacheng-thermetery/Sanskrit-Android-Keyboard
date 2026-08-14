@@ -26,6 +26,9 @@ sealed class KeyAction {
     data object Return : KeyAction()
     data object Space : KeyAction()
     data object NextKeyboard : KeyAction()
+
+    /** Long-press on the globe: open the system input-method picker. */
+    data object ShowInputMethodPicker : KeyAction()
     data object Shift : KeyAction()
     data object ModeSwitch : KeyAction()
 }

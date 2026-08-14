@@ -15,6 +15,7 @@ interface KeyboardViewDelegate {
     fun onInsertText(view: KeyboardView, text: String)
     fun onDeleteBackward(view: KeyboardView)
     fun onAdvanceToNextInputMode(view: KeyboardView)
+    fun onShowInputMethodPicker(view: KeyboardView)
 }
 
 /**
@@ -272,6 +273,7 @@ class KeyboardView(
             KeyAction.Return -> handleInsertion("\n")
             KeyAction.Space -> handleInsertion(" ")
             KeyAction.NextKeyboard -> delegate?.onAdvanceToNextInputMode(this)
+            KeyAction.ShowInputMethodPicker -> delegate?.onShowInputMethodPicker(this)
             KeyAction.Shift -> toggleShift()
             KeyAction.ModeSwitch -> toggleMode()
         }

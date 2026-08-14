@@ -142,6 +142,19 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
         advanceToNextInputMode()
     }
 
+    /**
+     * Long-press on the globe. This package ships six separate input methods,
+     * so tapping the globe usually just lands on another Sanskrit keyboard —
+     * the picker is how you get to an unrelated keyboard in one move.
+     */
+    override fun onShowInputMethodPicker(view: KeyboardView) {
+        session?.let {
+            currentInputConnection?.finishComposingText()
+            it.reset()
+        }
+        getSystemService(InputMethodManager::class.java)?.showInputMethodPicker()
+    }
+
     // MARK: - Helpers
 
     /**
