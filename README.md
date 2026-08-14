@@ -162,7 +162,17 @@ Keep that file safe and out of the repository. Android identifies an app by its 
 
 ### Cutting a release
 
-`.github/workflows/release.yml` builds, tests, signs and publishes to a GitHub Release. It needs four repository secrets (Settings → Secrets and variables → Actions):
+`.github/workflows/release.yml` builds and tests on every run, and publishes a signed APK to a GitHub Release when both a tag and a signing key are present:
+
+| Trigger | Result |
+|---|---|
+| Push a `v*` tag | test → build → sign → publish a Release |
+| Run manually with a tag | same |
+| Run manually with no tag | test → build only; the APK is kept as a workflow artifact |
+
+Without the signing secrets it still runs green and produces an unsigned APK artifact, so you can validate the pipeline before configuring anything.
+
+Signing needs four repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | Value |
 |---|---|

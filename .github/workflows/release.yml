@@ -1,9 +1,14 @@
 name: Release APK
 
-# Publishes a signed APK to a GitHub Release. Trigger it either by pushing a
-# tag (`git tag v1.0 && git push origin v1.0`) or from the Actions tab.
+# Builds and tests on every run. Publishes a signed APK to a GitHub Release
+# only when both a tag and a signing key are available, so the workflow is
+# useful (and green) before any secrets exist.
 #
-# Requires four repository secrets — Settings → Secrets and variables →
+#   push a v* tag           -> test, build, sign, publish a Release
+#   run manually with a tag -> same
+#   run manually, no tag    -> test and build only, APK kept as an artifact
+#
+# Signing needs four repository secrets — Settings -> Secrets and variables ->
 # Actions. The keystore is stored base64-encoded because secrets are text:
 #
 #   KEYSTORE_BASE64      base64 -w0 sanskrit-keyboards-release.jks
@@ -11,8 +16,11 @@ name: Release APK
 #   KEY_ALIAS            sanskrit
 #   KEY_PASSWORD         the key password
 #
-# The keystore is written to a temp file outside the workspace, and removed in
-# an always() step so it cannot survive into any later step or artifact.
+# Supply-chain note: the only third-party actions here are GitHub's own
+# checkout and setup-java. Publishing uses the preinstalled `gh` CLI rather
+# than a community action, so nothing outside GitHub runs in the job that
+# holds the decoded keystore. The Android SDK is already on the runner image,
+# so no SDK-installer action is needed either.
 
 on:
   push:
@@ -21,8 +29,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (e.g. v1.0)'
-        required: true
+        description: 'Tag to publish (e.g. v1.0). Leave blank to build and test only.'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -38,47 +47,96 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
+      - name: Resolve target tag
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run tests
         run: ./gradlew test --no-daemon
 
       - name: Decode keystore
+        id: keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::KEYSTORE_BASE64 secret is not set — cannot sign the release."
-            exit 1
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+            echo "Keystore decoded; release build will be signed."
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::KEYSTORE_BASE64 is not set — building an unsigned APK. Add the four signing secrets to publish an installable release."
           fi
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
 
-      - name: Build signed release APK
+      - name: Build release APK
         env:
           SANSKRIT_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SANSKRIT_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           SANSKRIT_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          export SANSKRIT_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          if [ "${{ steps.keystore.outputs.signed }}" = "true" ]; then
+            export SANSKRIT_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          fi
           ./gradlew assembleRelease --no-daemon
 
-      - name: Verify signature and stage the APK
+      - name: Stage APK and verify signature
+        id: stage
         run: |
+          set -euo pipefail
           APK=app/build/outputs/apk/release/app-release.apk
-          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          "$BT/apksigner" verify --verbose --print-certs "$APK"
-          VERSION="${{ github.event.inputs.tag || github.ref_name }}"
-          cp "$APK" "sanskrit-keyboards-${VERSION#v}.apk"
-          sha256sum "sanskrit-keyboards-${VERSION#v}.apk" | tee checksums.txt
+          TAG="${{ steps.target.outputs.tag }}"
+          VERSION="${TAG#v}"
+          [ -n "$VERSION" ] || VERSION="$(git rev-parse --short HEAD)"
+
+          NAME="sanskrit-keyboards-${VERSION}.apk"
+          cp "$APK" "$NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ steps.keystore.outputs.signed }}" = "true" ]; then
+            BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+            "$BT/apksigner" verify --verbose --print-certs "$NAME"
+          fi
+          sha256sum "$NAME" | tee checksums.txt
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-${{ steps.stage.outputs.name }}
+          path: |
+            ${{ steps.stage.outputs.name }}
+            checksums.txt
+          if-no-files-found: error
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          files: |
-            sanskrit-keyboards-*.apk
-            checksums.txt
-          generate_release_notes: true
+        if: steps.keystore.outputs.signed == 'true' && steps.target.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.target.outputs.tag }}
+          ASSET: ${{ steps.stage.outputs.name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" checksums.txt --clobber
+          else
+            gh release create "$TAG" "$ASSET" checksums.txt \
+              --title "Sanskrit Keyboards for Android ${TAG#v}" \
+              --generate-notes
+          fi
+
+      - name: Report why nothing was published
+        if: steps.keystore.outputs.signed != 'true' || steps.target.outputs.tag == ''
+        run: |
+          if [ "${{ steps.keystore.outputs.signed }}" != "true" ]; then
+            echo "::warning::No release published: signing secrets are not configured."
+          fi
+          if [ -z "${{ steps.target.outputs.tag }}" ]; then
+            echo "::warning::No release published: no tag given (run this workflow with a tag input, or push a v* tag)."
+          fi
 
       - name: Remove keystore
         if: always()
