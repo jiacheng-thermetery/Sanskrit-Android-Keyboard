@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      No permissions are declared. These keyboards do no networking, keep no
+      history, and write nothing outside their own process — the Android
+      counterpart of the iOS extensions all setting RequestsOpenAccess = false.
+    -->
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="false"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          Six independent input methods, one per scheme. Each appears
+          separately under Settings → System → Languages & input → On-screen
+          keyboard, mirroring the six iOS keyboard extensions.
+        -->
+
+        <service
+            android:name=".ime.IastKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_iast"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_iast" />
+        </service>
+
+        <service
+            android:name=".ime.HkIastKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_hk_iast"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_hk_iast" />
+        </service>
+
+        <service
+            android:name=".ime.HkDevanagariKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_hk_devanagari"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_hk_devanagari" />
+        </service>
+
+        <service
+            android:name=".ime.IastDevanagariKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_iast_devanagari"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_iast_devanagari" />
+        </service>
+
+        <service
+            android:name=".ime.VelthuisIastKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_velthuis_iast"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_velthuis_iast" />
+        </service>
+
+        <service
+            android:name=".ime.VelthuisDevanagariKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_velthuis_devanagari"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_velthuis_devanagari" />
+        </service>
+
+    </application>
+
+</manifest>

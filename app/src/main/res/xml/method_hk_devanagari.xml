@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.thermetery.sanskritkeyboards.MainActivity">
+    <subtype
+        android:label="@string/kb_hk_devanagari"
+        android:imeSubtypeLocale="sa"
+        android:imeSubtypeMode="keyboard"
+        android:isAsciiCapable="true" />
+</input-method>

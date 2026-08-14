@@ -1,0 +1,38 @@
+package com.thermetery.sanskritkeyboards.layouts
+
+import com.thermetery.sanskritkeyboards.core.KeyDefinition
+import com.thermetery.sanskritkeyboards.core.KeyKind
+
+/**
+ * Shared key constructors. The geometry (width units) matches the iOS
+ * layouts one-for-one so the ported keyboards lay out identically.
+ */
+internal fun ch(s: String, alts: List<String> = emptyList()): KeyDefinition =
+    KeyDefinition(kind = KeyKind.CHARACTER, primary = s, alternates = alts)
+
+internal val shiftKey = KeyDefinition(
+    kind = KeyKind.SHIFT, primary = "shift", widthUnits = 1.5f, displayLabel = "⇧"
+)
+
+internal val backspaceKey = KeyDefinition(
+    kind = KeyKind.BACKSPACE, primary = "backspace", widthUnits = 1.5f, displayLabel = "⌫"
+)
+
+internal fun bottomRow(modeLabel: String): List<KeyDefinition> = listOf(
+    KeyDefinition(
+        kind = KeyKind.MODE_SWITCH, primary = modeLabel,
+        widthUnits = 1.5f, displayLabel = modeLabel
+    ),
+    KeyDefinition(
+        kind = KeyKind.NEXT_KEYBOARD, primary = "globe",
+        widthUnits = 1.0f, displayLabel = "🌐"
+    ),
+    KeyDefinition(
+        kind = KeyKind.SPACE, primary = " ",
+        widthUnits = 5.0f, displayLabel = "space"
+    ),
+    KeyDefinition(
+        kind = KeyKind.RETURN, primary = "\n",
+        widthUnits = 2.5f, displayLabel = "return"
+    ),
+)

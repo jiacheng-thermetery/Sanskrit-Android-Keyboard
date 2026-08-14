@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Platform DeviceDefault keeps the host app dependency-free (no AndroidX):
+      the light theme here, the dark one in values-night/.
+    -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.Light">
+        <item name="android:colorAccent">@color/ic_launcher_background</item>
+    </style>
+</resources>

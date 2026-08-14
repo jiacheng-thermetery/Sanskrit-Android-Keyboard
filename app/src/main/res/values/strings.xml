@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sanskrit Keyboards</string>
+
+    <!-- Keyboard names, as they appear in Settings and the input-method picker. -->
+    <string name="kb_iast">IAST</string>
+    <string name="kb_hk_iast">HK → IAST</string>
+    <string name="kb_hk_devanagari">HK → Devanāgarī</string>
+    <string name="kb_iast_devanagari">IAST → Devanāgarī</string>
+    <string name="kb_velthuis_iast">Velthuis → IAST</string>
+    <string name="kb_velthuis_devanagari">Velthuis → Devanāgarī</string>
+</resources>
