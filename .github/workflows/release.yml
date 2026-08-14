@@ -39,6 +39,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # A hung Gradle step would otherwise sit here for the full six-hour job
+    # limit. The whole job takes about three minutes warm.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +49,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Resolve target tag
         id: target
