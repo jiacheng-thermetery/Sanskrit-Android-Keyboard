@@ -92,7 +92,21 @@ jobs:
         id: stage
         run: |
           set -euo pipefail
-          APK=app/build/outputs/apk/release/app-release.apk
+          # AGP names the artifact app-release.apk when a signing config is
+          # present and app-release-unsigned.apk when there is none, so resolve
+          # it rather than assuming the signed name.
+          OUT=app/build/outputs/apk/release
+          APK=""
+          for candidate in app-release.apk app-release-unsigned.apk; do
+            if [ -f "$OUT/$candidate" ]; then APK="$OUT/$candidate"; break; fi
+          done
+          if [ -z "$APK" ]; then
+            echo "::error::assembleRelease produced no APK in $OUT"
+            ls -lR app/build/outputs/apk || true
+            exit 1
+          fi
+          echo "Using $APK"
+
           TAG="${{ steps.target.outputs.tag }}"
           VERSION="${TAG#v}"
           [ -n "$VERSION" ] || VERSION="$(git rev-parse --short HEAD)"
