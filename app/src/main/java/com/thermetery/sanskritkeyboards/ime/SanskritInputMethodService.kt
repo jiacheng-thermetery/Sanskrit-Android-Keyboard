@@ -2,6 +2,7 @@ package com.thermetery.sanskritkeyboards.ime
 
 import android.inputmethodservice.InputMethodService
 import android.os.Build
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -126,11 +127,22 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
 
     override fun onDeleteBackward(view: KeyboardView) {
         val ic = currentInputConnection ?: return
-        val result = session?.processBackspace()
-        if (result is InputResult.Compose) {
-            ic.setComposingText(result.text, 1)
-        } else {
-            ic.deleteSurroundingText(1, 0)
+        val hasSelection = !ic.getSelectedText(0).isNullOrEmpty()
+        when (val plan = planBackspace(hasSelection, session)) {
+            is BackspacePlan.Compose -> ic.setComposingText(plan.text, 1)
+
+            // Committing empty text over a selection removes it. This is the
+            // case deleteSurroundingText() cannot handle — by contract it only
+            // touches text around the cursor and leaves a selection intact.
+            BackspacePlan.DeleteSelection -> ic.commitText("", 1)
+
+            // Let the editor do the deleting. A DEL key removes one whole
+            // grapheme cluster, whereas deleteSurroundingText() counts UTF-16
+            // chars and would split a Devanagari akṣara mid-cluster.
+            BackspacePlan.SendDelKey -> {
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            }
         }
     }
 

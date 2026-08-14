@@ -252,6 +252,8 @@ The tables, layouts and gestures are identical. Three things differ, in each cas
 
 One behaviour is worth restating because it surprises people: backspace in a transliterating keyboard removes one *input* character at a time and re-renders, so deleting through `kRSNa` walks back `कृष्ण` → `कृष्` → `कृ` → `क्`. Hit space first to commit the current rendering and "lock it in". Moving the cursor also commits the buffer, so a keystroke after a cursor move starts fresh.
 
+Backspace resolves in this order: delete the selection if there is one, otherwise shorten the pending buffer if there is one, otherwise hand a DEL key to the editor. That last step matters for Devanāgarī — one DEL removes a whole grapheme cluster, whereas deleting a fixed number of UTF-16 chars would split an akṣara mid-cluster.
+
 ## Privacy
 
 No permissions, no network, no storage, no analytics, no dependencies in the shipped APK. See [PRIVACY.md](PRIVACY.md).
