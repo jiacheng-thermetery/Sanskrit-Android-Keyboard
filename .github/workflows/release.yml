@@ -1,0 +1,85 @@
+name: Release APK
+
+# Publishes a signed APK to a GitHub Release. Trigger it either by pushing a
+# tag (`git tag v1.0 && git push origin v1.0`) or from the Actions tab.
+#
+# Requires four repository secrets — Settings → Secrets and variables →
+# Actions. The keystore is stored base64-encoded because secrets are text:
+#
+#   KEYSTORE_BASE64      base64 -w0 sanskrit-keyboards-release.jks
+#   KEYSTORE_PASSWORD    the store password
+#   KEY_ALIAS            sanskrit
+#   KEY_PASSWORD         the key password
+#
+# The keystore is written to a temp file outside the workspace, and removed in
+# an always() step so it cannot survive into any later step or artifact.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 secret is not set — cannot sign the release."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Build signed release APK
+        env:
+          SANSKRIT_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          SANSKRIT_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SANSKRIT_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          export SANSKRIT_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Verify signature and stage the APK
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/apksigner" verify --verbose --print-certs "$APK"
+          VERSION="${{ github.event.inputs.tag || github.ref_name }}"
+          cp "$APK" "sanskrit-keyboards-${VERSION#v}.apk"
+          sha256sum "sanskrit-keyboards-${VERSION#v}.apk" | tee checksums.txt
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            sanskrit-keyboards-*.apk
+            checksums.txt
+          generate_release_notes: true
+
+      - name: Remove keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"

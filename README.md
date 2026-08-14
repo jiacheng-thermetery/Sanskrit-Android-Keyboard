@@ -160,6 +160,25 @@ keytool -genkeypair -v \
 
 Keep that file safe and out of the repository. Android identifies an app by its signing key: **lose it and you cannot ship an update that upgrades an existing install** — users would have to uninstall and reinstall, losing app data.
 
+### Cutting a release
+
+`.github/workflows/release.yml` builds, tests, signs and publishes to a GitHub Release. It needs four repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `KEYSTORE_BASE64` | `base64 -w0 sanskrit-keyboards-release.jks` |
+| `KEYSTORE_PASSWORD` | the store password |
+| `KEY_ALIAS` | `sanskrit` |
+| `KEY_PASSWORD` | the key password |
+
+With those set, either push a tag or run the workflow from the Actions tab:
+
+```sh
+git tag v1.1 && git push origin v1.1
+```
+
+The workflow decodes the keystore to a temp file outside the workspace and deletes it in an `always()` step, so it never lands in the repo or in a build artifact.
+
 ## Project layout
 
 ```
