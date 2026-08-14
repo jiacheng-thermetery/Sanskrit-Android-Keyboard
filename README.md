@@ -241,4 +241,4 @@ No permissions, no network, no storage, no analytics, no dependencies in the shi
 
 ## Licence
 
-See [LICENSE](LICENSE). App icon attribution is in [APP_ICON_SOURCE.md](APP_ICON_SOURCE.md).
+MIT — see [LICENSE](LICENSE), same as the [iOS app](https://github.com/jiacheng-thermetery/Sanskrit-iOS-Keyboard) this was ported from. App icon attribution is in [APP_ICON_SOURCE.md](APP_ICON_SOURCE.md).
