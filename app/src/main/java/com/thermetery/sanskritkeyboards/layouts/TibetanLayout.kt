@@ -7,17 +7,20 @@ import com.thermetery.sanskritkeyboards.core.KeyboardMode
 import com.thermetery.sanskritkeyboards.translit.TibetanScript
 
 /**
- * Direct Tibetan layout, in the traditional alphabetical order of the thirty
- * consonants (ka kha ga nga / ca cha ja nya / …) — the order they are taught
- * and recited in, so it is the one a reader can find keys in without hunting.
+ * Direct Tibetan layout, matching the arrangement on the reference keyboard:
+ * the letters sit on QWERTY positions phonetically rather than in alphabetical
+ * order, so `k` is ཀ, `g` is ག, `m` is མ, and `e u i o` carry the four vowel
+ * signs.
  *
- * Long-pressing any consonant gives its **subjoined** form, which is how you
- * build a stack: tap ས, then hold ཀ and pick ྐ to get སྐ. The subjoined
+ * Both layers are the mapping as supplied. The unshifted layer covers 21 of the
+ * thirty gsal byed; shift recovers the other nine (ཝ ཐ ཕ ཨ ཤ ཁ ཞ ཆ ཚ) and adds
+ * the Sanskrit retroflexes, the subjoined ྲ ྱ ྭ ླ and the marks ཿ ཾ. A few
+ * keys — ྄, ཇ, བ — are the same on both layers.
+ *
+ * Long-pressing a consonant additionally gives its **subjoined** form, which is
+ * how a stack is built by hand: tap ས, then hold ཀ and choose ྐ for སྐ. Those
  * alternates are derived from the base letters rather than listed, so the two
- * can never disagree.
- *
- * The space bar inserts a tsheg (་) because that, not a space, is what
- * separates Tibetan syllables. Hold it for a literal space.
+ * cannot drift apart.
  */
 object TibetanLayout : KeyboardLayout {
 
@@ -34,80 +37,108 @@ object TibetanLayout : KeyboardLayout {
         return ch(base, if (sub != null) listOf(sub) else emptyList())
     }
 
+    // MARK: - Unshifted, as supplied
+    //
+    //   q ྄   w ཉ   e ེ   r ར   t ཏ   y ཡ   u ུ   i ི   o ོ   p པ
+    //   a འ   s ས   d ད   f ང   g ག   h ཧ   j ཇ   k ཀ   l ལ
+    //   z ཟ   x ཛ   c ཅ   v ཙ   b བ   n ན   m མ
+
     private val lettersLower: List<List<KeyDefinition>> = listOf(
-        // ka kha ga nga / ca cha ja nya
-        listOf("k", "kh", "g", "ng", "c", "ch", "j", "ny", "t", "th").map { cons(it) },
-        // ta tha da na / pa pha ba ma / tsa tsha dza wa
-        listOf("d", "n", "p", "ph", "b", "m", "ts", "tsh", "dz", "w").map { cons(it) },
-        // zha za 'a ya / ra la sha sa / ha a
-        listOf("zh", "z", "'", "y", "r", "l", "sh", "s", "h", "a").map { cons(it) },
+        listOf(
+            ch("྄"),        // halanta / srog med
+            cons("ny"),      // ཉ
+            ch("ེ"),        // e
+            cons("r"),       // ར
+            cons("t"),       // ཏ
+            cons("y"),       // ཡ
+            ch("ུ"),        // u
+            ch("ི"),        // i
+            ch("ོ"),        // o
+            cons("p"),       // པ
+        ),
+        listOf(
+            cons("'"),       // འ
+            cons("s"),       // ས
+            cons("d"),       // ད
+            cons("ng"),      // ང
+            cons("g"),       // ག
+            cons("h"),       // ཧ
+            cons("j"),       // ཇ
+            // Supplied as ཇ, which duplicated `j` and left ཀ off the keyboard
+            // entirely — read as ka.
+            cons("k"),       // ཀ
+            cons("l"),       // ལ
+        ),
         listOf(
             shiftKey,
-            ch("ི"),   // i
-            ch("ུ"),   // u
-            ch("ེ"),   // e
-            ch("ོ"),   // o
-            ch("ཱ"),   // long a, for Sanskrit loanwords
-            ch("ཾ"),   // anusvara
-            ch("ཿ"),   // visarga
+            cons("z"),       // ཟ
+            cons("dz"),      // ཛ
+            cons("c"),       // ཅ
+            cons("ts"),      // ཙ
+            cons("b"),       // བ
+            cons("n"),       // ན
+            cons("m"),       // མ
             backspaceKey,
         ),
         tibetanBottomRow("༡༢༣"),
     )
 
-    /**
-     * The shifted layer carries the letters used to write Sanskrit in Tibetan
-     * script — the retroflexes and voiced aspirates that Tibetan itself has no
-     * use for — plus the fixed-form and head marks.
-     */
+    // MARK: - Shifted, as supplied
+    //
+    // Recovers the nine consonants absent from the unshifted layer
+    // (ཝ ཐ ཕ ཨ ཤ ཁ ཞ ཆ ཚ) and adds the Sanskrit retroflexes ཊ ཋ ཌ ཎ ཥ,
+    // the subjoined ྲ ྱ ྭ ླ and the marks ཿ ཾ. Together with the unshifted
+    // layer that is all thirty gsal byed.
+    //
+    //   Q ྄   W ཝ   E ཻ   R ྲ   T ཐ   Y ྱ   U ྭ   I ྀ   O ཽ   P ཕ
+    //   A ཨ   S ཤ   D ཌ   F ཋ   G ཊ   H ཿ   J ཇ   K ཁ   L ླ
+    //   Z ཞ   X ཥ   C ཆ   V ཚ   B བ   N ཎ   M ཾ
+
     private val lettersUpper: List<List<KeyDefinition>> = listOf(
         listOf(
-            ch("ཊ", listOf("ྚ")),   // Ta
-            ch("ཋ", listOf("ྛ")),   // Tha
-            ch("ཌ", listOf("ྜ")),   // Da
-            ch("ཎ", listOf("ྞ")),   // Na
-            ch("ཥ", listOf("ྵ")),   // Sha
-            ch("ྐྵ"),                    // ksha
-            ch("ཛྷ"),                    // dzha
-            ch("གྷ"),                    // gha
-            ch("དྷ"),                    // dha
-            ch("བྷ"),                    // bha
+            ch("྄"),        // halanta, as unshifted
+            cons("w"),       // ཝ
+            ch("ཻ"),        // ai
+            ch("ྲ"),        // ra btags
+            cons("th"),      // ཐ
+            ch("ྱ"),        // ya btags
+            ch("ྭ"),        // wa zur
+            ch("ྀ"),        // reversed gigu
+            ch("ཽ"),        // au
+            cons("ph"),      // ཕ
         ),
         listOf(
-            ch("ཀྵ"),
-            ch("ཪ"),   // fixed-form ra
-            ch("ཬ"),   // fixed-form ra (subjoined context)
-            ch("ྰ"),
-            ch("ྵ"),
-            ch("ྶ"),
-            ch("ྷ"),
-            ch("ྸ"),
-            ch("ཱྀ"),
-            ch("ྀ"),
-        ),
-        listOf(
-            ch("ཻ"),   // ai
-            ch("ཽ"),   // au
-            ch("ྲྀ"),
-            ch("ླྀ"),
-            ch("ྃ"),   // nada
-            ch("ྂ"),
-            ch("༵"),
-            ch("༷"),
-            ch("༹"),
-            ch("༾"),
+            cons("a"),       // ཨ
+            cons("sh"),      // ཤ
+            cons("D"),       // ཌ
+            cons("Th"),      // ཋ
+            cons("T"),       // ཊ
+            ch("ཿ"),        // visarga
+            cons("j"),       // ཇ, as unshifted
+            cons("kh"),      // ཁ
+            ch("ླ"),        // la btags
         ),
         listOf(
             shiftKey,
-            ch("ི"), ch("ུ"), ch("ེ"), ch("ོ"),
-            ch("ཱ"), ch("ཾ"), ch("ཿ"),
+            cons("zh"),      // ཞ
+            cons("Sh"),      // ཥ
+            cons("ch"),      // ཆ
+            cons("tsh"),     // ཚ
+            cons("b"),       // བ, as unshifted
+            cons("N"),       // ཎ
+            ch("ཾ"),        // anusvara
             backspaceKey,
         ),
         tibetanBottomRow("༡༢༣"),
     )
 
+    // MARK: - Numbers and symbols, as supplied
+    //
+    //   ༡༢༣༤༥༦༧༨༩༠
+    //   - / : ; ༼ ༽ $ ༕ @ “
+    //   ࿂ ༜ ༴ ། ༄
+
     private val numbers: List<List<KeyDefinition>> = listOf(
-        // Tibetan digits, with the Arabic equivalents on long-press.
         listOf(
             ch("༡", listOf("1")), ch("༢", listOf("2")), ch("༣", listOf("3")),
             ch("༤", listOf("4")), ch("༥", listOf("5")), ch("༦", listOf("6")),
@@ -115,17 +146,17 @@ object TibetanLayout : KeyboardLayout {
             ch("༠", listOf("0")),
         ),
         listOf(
-            ch("།", listOf("༎")),   // shad, double shad
-            ch("༎"),
-            ch("༄", listOf("༅", "༆")),   // yig mgo head marks
-            ch("༔"),
+            ch("-"), ch("/"), ch(":"), ch(";"),
             ch("༼"), ch("༽"),
-            ch("-"), ch("/"), ch("("), ch(")"),
+            ch("$"), ch("༕"), ch("@"),
+            ch("“", listOf("“", "”")),
         ),
         listOf(
-            ch("་"),   // tsheg, also available on the space bar
-            ch("."), ch(","), ch("?"), ch("!"),
-            ch("\""), ch("'"),
+            ch("࿂"),
+            ch("༜"),
+            ch("༴"),
+            ch("།", listOf("།", "༎")),
+            ch("༄", listOf("༄", "༅", "༆")),
             backspaceKey,
         ),
         tibetanBottomRow("ཨ་བ"),
@@ -133,9 +164,9 @@ object TibetanLayout : KeyboardLayout {
 }
 
 /**
- * A dedicated tsheg key sits between the space bar and return, matching the
- * reference layout — on a direct Tibetan keyboard the tsheg is a letter you
- * reach for constantly, and the space bar stays a space.
+ * A dedicated tsheg key sits between the space bar and return, as on the
+ * reference keyboard — on a direct Tibetan layout the tsheg is a letter you
+ * reach for constantly, so the space bar stays a space.
  */
 internal fun tibetanBottomRow(modeLabel: String): List<KeyDefinition> = listOf(
     KeyDefinition(
@@ -150,7 +181,7 @@ internal fun tibetanBottomRow(modeLabel: String): List<KeyDefinition> = listOf(
         kind = KeyKind.SPACE, primary = " ",
         widthUnits = 4.0f, displayLabel = "space"
     ),
-    // tsheg, with shad and double shad on long-press
+    // tsheg, with the shads on long-press
     ch("་", listOf("་", "།", "༎")).copy(widthUnits = 1.0f),
     KeyDefinition(
         kind = KeyKind.RETURN, primary = "\n",

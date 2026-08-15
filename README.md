@@ -13,7 +13,7 @@ This is a port of [Sanskrit-iOS-Keyboard](https://github.com/jiacheng-thermetery
 | **Velthuis → IAST**       | Velthuis (`.r ~n "s`)  | IAST                    | Velthuis muscle memory from devnag / LaTeX.              |
 | **Velthuis → Devanāgarī** | Velthuis               | Devanāgarī              | Same, with Devanāgarī output.                            |
 | **Wylie → Tibetan**       | Wylie (`bkra shis`)    | Tibetan (`བཀྲ་ཤིས་`)   | Typing Tibetan without hunting for stacks.               |
-| **Tibetan**               | Tibetan letters        | Tibetan                 | Direct entry; hold a consonant for its subjoined form.   |
+| **Tibetan**               | Tibetan letters        | Tibetan                 | Direct entry on phonetic QWERTY; hold for subjoined forms. |
 
 The five transliterating keyboards (everything except plain IAST) do live, Wylie-style transliteration: each keystroke is buffered, the *whole* pending sequence is re-transliterated, and the on-screen text is replaced with the new rendering. Type `R` in HK and you see `ṛ`; type another `R` and `ṛ` is replaced with `ṝ`. Space (or any non-buffer character) commits and resets the buffer. The Velthuis keyboards treat `.` `"` `~` as letter-like — `.` followed by `r` becomes `ṛ`/`ऋ`, not a period.
 

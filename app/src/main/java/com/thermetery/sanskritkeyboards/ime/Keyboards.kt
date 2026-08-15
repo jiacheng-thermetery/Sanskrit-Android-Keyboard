@@ -60,13 +60,10 @@ class WylieTibetanKeyboardService : SanskritInputMethodService() {
 }
 
 /**
- * Tibetan — the letters directly, with every consonant's subjoined form on
- * long-press so stacks can be built by hand. Five rows rather than four, so it
- * needs more height than the Latin-input keyboards.
+ * Tibetan — the letters directly on phonetic QWERTY positions, with every
+ * consonant's subjoined form on long-press so stacks can be built by hand.
  */
 class TibetanKeyboardService : SanskritInputMethodService() {
     override val keyboardLayout: KeyboardLayout = TibetanLayout
     override val reservesPopoverHeadroom: Boolean = true
-    override val portraitHeightDp: Float get() = 400f
-    override val landscapeHeightDp: Float get() = 320f
 }
