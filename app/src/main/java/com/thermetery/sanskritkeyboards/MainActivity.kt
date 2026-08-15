@@ -54,6 +54,8 @@ class MainActivity : Activity() {
         root.addView(hkReferenceCard())
         root.addView(spacer(20))
         root.addView(velthuisReferenceCard())
+        root.addView(spacer(20))
+        root.addView(wylieReferenceCard())
 
         val scroll = ScrollView(this).apply {
             setBackgroundColor(color(R.color.app_background))
@@ -66,12 +68,12 @@ class MainActivity : Activity() {
 
     private fun header(): View = column().apply {
         addView(
-            text("Saṃskṛta on Android, finally", size = 22f, bold = true)
+            text("Saṃskṛta and བོད་ཡིག on Android", size = 22f, bold = true)
         )
         addView(spacer(8))
         addView(
             text(
-                "Six keyboards for typing Sanskrit. Pick the one that matches your habits.",
+                "Eight keyboards for Sanskrit and Tibetan. Pick the one that matches your habits.",
                 size = 14f, secondary = true
             )
         )
@@ -91,6 +93,10 @@ class MainActivity : Activity() {
         keyboardRow("Velthuis → IAST", "Type Velthuis (.r .s ~n \"n aa …), see IAST appear live.")
         divider()
         keyboardRow("Velthuis → Devanāgarī", "Type Velthuis, see Devanāgarī appear live (k.r.s.na → कृष्ण).")
+        divider()
+        keyboardRow("Wylie → Tibetan", "Type Wylie, see Tibetan appear live (bkra shis → བཀྲ་ཤིས་).")
+        divider()
+        keyboardRow("Tibetan", "The letters directly, in alphabetical order. Hold a consonant for its subjoined form.")
     }
 
     private fun LinearLayout.keyboardRow(name: String, subtitle: String) {
@@ -113,7 +119,7 @@ class MainActivity : Activity() {
         addView(spacer(12))
         stepRow("1", "Open Settings → System → Languages & input → On-screen keyboard → Manage keyboards.")
         addView(spacer(10))
-        stepRow("2", "Turn on any of: IAST, HK → IAST, HK → Devanāgarī, IAST → Devanāgarī, Velthuis → IAST, Velthuis → Devanāgarī.")
+        stepRow("2", "Turn on any of: IAST, HK → IAST, HK → Devanāgarī, IAST → Devanāgarī, Velthuis → IAST, Velthuis → Devanāgarī, Wylie → Tibetan, Tibetan.")
         addView(spacer(10))
         stepRow("3", "In any text field, tap the keyboard-switch button (or 🌐 on our keyboards) and pick the one you want.")
         addView(spacer(14))
@@ -242,6 +248,35 @@ class MainActivity : Activity() {
         referenceRow(".t .th .d .dh", "ṭ ṭh ḍ ḍh")
         referenceRow("\"s .s", "ś ṣ")
         referenceRow(".m .h", "ṃ ḥ")
+    }
+
+    private fun wylieReferenceCard(): View = card().apply {
+        addView(text("Wylie cheatsheet", size = 17f, bold = true))
+        addView(spacer(6))
+        addView(
+            text(
+                "A Tibetan syllable is a stack: [prefix] [superscript] ROOT [subscript] " +
+                    "[vowel] [suffix]. Wylie writes it left to right and the keyboard works " +
+                    "out which letter is the root — bkra is བཀྲ (b is a prefix, r hangs " +
+                    "under k), while sgra is སྒྲ (s caps g). The space bar types a tsheg.",
+                size = 13f, secondary = true
+            )
+        )
+        addView(spacer(12))
+        referenceRow("ka kha ga nga", "ཀ ཁ ག ང")
+        referenceRow("ca cha ja nya", "ཅ ཆ ཇ ཉ")
+        referenceRow("ta tha da na", "ཏ ཐ ད ན")
+        referenceRow("pa pha ba ma", "པ ཕ བ མ")
+        referenceRow("tsa tsha dza wa", "ཙ ཚ ཛ ཝ")
+        referenceRow("zha za \'a ya", "ཞ ཟ འ ཡ")
+        referenceRow("ra la sha sa", "ར ལ ཤ ས")
+        referenceRow("ha a", "ཧ ཨ")
+        referenceRow("i u e o", "ི ུ ེ ོ")
+        addView(spacer(10))
+        referenceRow("bod", "བོད")
+        referenceRow("bkra shis", "བཀྲ་ཤིས་")
+        referenceRow("sangs rgyas", "སངས་རྒྱས་")
+        referenceRow("bsgrubs", "བསྒྲུབས")
     }
 
     private fun LinearLayout.referenceRow(base: String, alts: String) {

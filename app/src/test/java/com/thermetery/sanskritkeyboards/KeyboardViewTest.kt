@@ -78,6 +78,9 @@ class KeyboardViewTest {
             Triple("IAST", IastLayout, true),
             Triple("HK", HkLayout, false),
             Triple("Velthuis", VelthuisLayout, true),
+            Triple("Wylie", com.thermetery.sanskritkeyboards.layouts.WylieLayout, false),
+            // Five rows rather than four — the one most likely to overflow.
+            Triple("Tibetan", com.thermetery.sanskritkeyboards.layouts.TibetanLayout, true),
         )) {
             val (view, _) = build(layout, headroom)
             val all = keys(view)

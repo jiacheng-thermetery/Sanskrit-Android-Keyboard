@@ -9,4 +9,6 @@
     <string name="kb_iast_devanagari">IAST → Devanāgarī</string>
     <string name="kb_velthuis_iast">Velthuis → IAST</string>
     <string name="kb_velthuis_devanagari">Velthuis → Devanāgarī</string>
+    <string name="kb_wylie_tibetan">Wylie → Tibetan</string>
+    <string name="kb_tibetan">Tibetan</string>
 </resources>

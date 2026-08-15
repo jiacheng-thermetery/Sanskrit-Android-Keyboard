@@ -109,6 +109,32 @@
                 android:resource="@xml/method_velthuis_devanagari" />
         </service>
 
+        <service
+            android:name=".ime.WylieTibetanKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_wylie_tibetan"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_wylie_tibetan" />
+        </service>
+
+        <service
+            android:name=".ime.TibetanKeyboardService"
+            android:exported="true"
+            android:label="@string/kb_tibetan"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method_tibetan" />
+        </service>
+
     </application>
 
 </manifest>

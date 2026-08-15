@@ -18,7 +18,17 @@ internal val backspaceKey = KeyDefinition(
     kind = KeyKind.BACKSPACE, primary = "backspace", widthUnits = 1.5f, displayLabel = "⌫"
 )
 
-internal fun bottomRow(modeLabel: String): List<KeyDefinition> = listOf(
+/**
+ * @param spacePrimary what the space bar inserts. Tibetan writes a tsheg (་)
+ *   between syllables rather than a space, so its keyboards override this and
+ *   offer a literal space on long-press instead.
+ */
+internal fun bottomRow(
+    modeLabel: String,
+    spacePrimary: String = " ",
+    spaceLabel: String = "space",
+    spaceAlternates: List<String> = emptyList(),
+): List<KeyDefinition> = listOf(
     KeyDefinition(
         kind = KeyKind.MODE_SWITCH, primary = modeLabel,
         widthUnits = 1.5f, displayLabel = modeLabel
@@ -28,8 +38,9 @@ internal fun bottomRow(modeLabel: String): List<KeyDefinition> = listOf(
         widthUnits = 1.0f, displayLabel = "🌐"
     ),
     KeyDefinition(
-        kind = KeyKind.SPACE, primary = " ",
-        widthUnits = 5.0f, displayLabel = "space"
+        kind = KeyKind.SPACE, primary = spacePrimary,
+        alternates = spaceAlternates,
+        widthUnits = 5.0f, displayLabel = spaceLabel
     ),
     KeyDefinition(
         kind = KeyKind.RETURN, primary = "\n",

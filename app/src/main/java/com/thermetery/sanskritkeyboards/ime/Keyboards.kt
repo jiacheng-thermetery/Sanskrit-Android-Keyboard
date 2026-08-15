@@ -3,7 +3,10 @@ package com.thermetery.sanskritkeyboards.ime
 import com.thermetery.sanskritkeyboards.core.KeyboardLayout
 import com.thermetery.sanskritkeyboards.layouts.HkLayout
 import com.thermetery.sanskritkeyboards.layouts.IastLayout
+import com.thermetery.sanskritkeyboards.layouts.TibetanLayout
 import com.thermetery.sanskritkeyboards.layouts.VelthuisLayout
+import com.thermetery.sanskritkeyboards.layouts.WylieLayout
+import com.thermetery.sanskritkeyboards.translit.WylieToTibetan
 import com.thermetery.sanskritkeyboards.translit.HkToDevanagari
 import com.thermetery.sanskritkeyboards.translit.HkToIast
 import com.thermetery.sanskritkeyboards.translit.IastToDevanagari
@@ -48,4 +51,22 @@ class VelthuisDevanagariKeyboardService : SanskritInputMethodService() {
     override val keyboardLayout: KeyboardLayout = VelthuisLayout
     override val scheme: Transliterator = VelthuisToDevanagari
     override val reservesPopoverHeadroom: Boolean = true
+}
+
+/** Wylie → Tibetan — type `bkra shis`, see བཀྲ་ཤིས་. */
+class WylieTibetanKeyboardService : SanskritInputMethodService() {
+    override val keyboardLayout: KeyboardLayout = WylieLayout
+    override val scheme: Transliterator = WylieToTibetan
+}
+
+/**
+ * Tibetan — the letters directly, with every consonant's subjoined form on
+ * long-press so stacks can be built by hand. Five rows rather than four, so it
+ * needs more height than the Latin-input keyboards.
+ */
+class TibetanKeyboardService : SanskritInputMethodService() {
+    override val keyboardLayout: KeyboardLayout = TibetanLayout
+    override val reservesPopoverHeadroom: Boolean = true
+    override val portraitHeightDp: Float get() = 400f
+    override val landscapeHeightDp: Float get() = 320f
 }

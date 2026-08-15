@@ -1,6 +1,6 @@
-# Sanskrit Keyboards for Android
+# Sanskrit & Tibetan Keyboards for Android
 
-Six custom Android keyboards for typing Sanskrit. Pick whichever matches your habits — they coexist, you enable each one separately in Settings, and switch between them by tapping the 🌐 globe key (hold it to open the system keyboard picker).
+Eight custom Android keyboards for typing Sanskrit and Tibetan. Pick whichever matches your habits — they coexist, you enable each one separately in Settings, and switch between them by tapping the 🌐 globe key (hold it to open the system keyboard picker).
 
 This is a port of [Sanskrit-iOS-Keyboard](https://github.com/jiacheng-thermetery/Sanskrit-iOS-Keyboard). The transliteration tables, key layouts, popover behaviour and keyboard geometry are ported one-for-one; see [Differences from the iOS version](#differences-from-the-ios-version) for the handful of places where Android's input APIs made a different choice correct.
 
@@ -12,6 +12,8 @@ This is a port of [Sanskrit-iOS-Keyboard](https://github.com/jiacheng-thermetery
 | **IAST → Devanāgarī**     | QWERTY + long-press    | Devanāgarī              | Read in IAST while typing; render Devanāgarī.            |
 | **Velthuis → IAST**       | Velthuis (`.r ~n "s`)  | IAST                    | Velthuis muscle memory from devnag / LaTeX.              |
 | **Velthuis → Devanāgarī** | Velthuis               | Devanāgarī              | Same, with Devanāgarī output.                            |
+| **Wylie → Tibetan**       | Wylie (`bkra shis`)    | Tibetan (`བཀྲ་ཤིས་`)   | Typing Tibetan without hunting for stacks.               |
+| **Tibetan**               | Tibetan letters        | Tibetan                 | Direct entry; hold a consonant for its subjoined form.   |
 
 The five transliterating keyboards (everything except plain IAST) do live, Wylie-style transliteration: each keystroke is buffered, the *whole* pending sequence is re-transliterated, and the on-screen text is replaced with the new rendering. Type `R` in HK and you see `ṛ`; type another `R` and `ṛ` is replaced with `ṝ`. Space (or any non-buffer character) commits and resets the buffer. The Velthuis keyboards treat `.` `"` `~` as letter-like — `.` followed by `r` becomes `ṛ`/`ऋ`, not a period.
 
@@ -119,6 +121,32 @@ Examples (Velthuis → Devanāgarī):
 - `k.r.s.na` → `कृष्ण`
 - `j~naana` → `ज्ञान`
 - `dharma` → `धर्म`
+
+## Wylie → Tibetan
+
+Tibetan is not a flat sequence of letters. Each syllable is a vertical stack built round one root letter:
+
+```
+[prefix] [superscript] ROOT [subscript…] [vowel] [suffix] [post-suffix]
+ sngon    mgo can              'dogs can          rjes     yang 'jug
+ 'jug                                             'jug
+```
+
+In Unicode the *top* of the stack takes the base form and everything beneath it a subjoined form, so `rka` is ra + subjoined ka (རྐ) — not ka with something added.
+
+Wylie writes all of that left to right, and the keyboard works out which letter is the root from Tibetan orthography rather than asking you:
+
+| Wylie     | Tibetan            | Why                                                        |
+|-----------|--------------------|------------------------------------------------------------|
+| `bkra`    | བཀྲ            | `b` cannot cap `k`, but `r` can hang from it → `b` is a prefix |
+| `sgra`    | སྒྲ            | `s` *can* cap `g`, so it does                              |
+| `grwa`    | གྲྭ            | two subscripts on one root, not a prefix on `rwa`          |
+| `lha`     | ལྷ              | falls out of la mgo                                        |
+| `bsgrubs` | བསྒྲུབས | the full stack: prefix, superscript, root, subscript, vowel, suffix, post-suffix |
+
+The **space bar types a tsheg (་)**, since that is what separates Tibetan syllables and what a space means in Wylie. Hold it for a literal space. The apostrophe is on the home row because in Wylie it is a letter (a-chung): `'brug` → འབྲུག.
+
+Capitals are the Sanskrit retroflexes: `T Th D N Sh` → ཊ ཋ ཌ ཎ ཥ.
 
 ## Build
 

@@ -271,7 +271,8 @@ class KeyboardView(
             is KeyAction.Insert -> handleInsertion(action.text)
             KeyAction.Backspace -> delegate?.onDeleteBackward(this)
             KeyAction.Return -> handleInsertion("\n")
-            KeyAction.Space -> handleInsertion(" ")
+            // Not hard-coded to " ": Tibetan's space bar inserts a tsheg.
+            KeyAction.Space -> handleInsertion(button.definition.primary)
             KeyAction.NextKeyboard -> delegate?.onAdvanceToNextInputMode(this)
             KeyAction.ShowInputMethodPicker -> delegate?.onShowInputMethodPicker(this)
             KeyAction.Shift -> toggleShift()
