@@ -179,10 +179,17 @@ internal fun tibetanBottomRow(modeLabel: String): List<KeyDefinition> = listOf(
     ),
     KeyDefinition(
         kind = KeyKind.SPACE, primary = " ",
-        widthUnits = 4.0f, displayLabel = "space"
+        widthUnits = 3.0f, displayLabel = "space"
     ),
     // tsheg, with the shads on long-press
-    ch("་", listOf("་", "།", "༎")).copy(widthUnits = 1.0f),
+    ch("་", listOf("།", "༎")).copy(widthUnits = 1.0f),
+    // Sanskrit-mode toggle: relaxes the native stacking rules for loanwords
+    // like པདྨ. The sentinel is swallowed by the preprocessor, and the key
+    // stays lit while the mode is on.
+    KeyDefinition(
+        kind = KeyKind.CHARACTER, primary = TibetanScript.SANSKRIT_MODE_TOGGLE,
+        widthUnits = 1.0f, displayLabel = "ཀྵ"
+    ),
     KeyDefinition(
         kind = KeyKind.RETURN, primary = "\n",
         widthUnits = 2.5f, displayLabel = "return"

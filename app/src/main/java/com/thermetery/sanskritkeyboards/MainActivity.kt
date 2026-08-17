@@ -94,9 +94,9 @@ class MainActivity : Activity() {
         divider()
         keyboardRow("Velthuis → Devanāgarī", "Type Velthuis, see Devanāgarī appear live (k.r.s.na → कृष्ण).")
         divider()
-        keyboardRow("Wylie → Tibetan", "Type Wylie, see Tibetan appear live (bkra shis → བཀྲ་ཤིས་).")
+        keyboardRow("Wylie → Tibetan", "Type Wylie, see Tibetan appear live (bkra shis → བཀྲ་ཤིས་). Space is smart: tsheg mid-text, a real space after །. pad+ma → པདྨ.")
         divider()
-        keyboardRow("Tibetan", "Phonetic QWERTY positions. The ྄ key stacks: ལ ྄ ཧ gives ལྷ.")
+        keyboardRow("Tibetan", "Phonetic QWERTY. ྄ stacks by native rules (ལ ྄ ཧ → ལྷ); ཀྵ toggles Sanskrit mode for stacks like པདྨ.")
     }
 
     private fun LinearLayout.keyboardRow(name: String, subtitle: String) {
@@ -277,6 +277,7 @@ class MainActivity : Activity() {
         referenceRow("bkra shis", "བཀྲ་ཤིས་")
         referenceRow("sangs rgyas", "སངས་རྒྱས་")
         referenceRow("bsgrubs", "བསྒྲུབས")
+        referenceRow("pad+ma", "པདྨ")
     }
 
     private fun LinearLayout.referenceRow(base: String, alts: String) {

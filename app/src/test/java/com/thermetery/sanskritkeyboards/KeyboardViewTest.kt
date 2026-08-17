@@ -36,10 +36,12 @@ class KeyboardViewTest {
 
     private class RecordingDelegate : KeyboardViewDelegate {
         val inserted = mutableListOf<String>()
+        val spaceBars = mutableListOf<String>()
         var deletes = 0
         var advances = 0
         var pickerRequests = 0
         override fun onInsertText(view: KeyboardView, text: String) { inserted += text }
+        override fun onSpaceBar(view: KeyboardView, primary: String) { spaceBars += primary }
         override fun onDeleteBackward(view: KeyboardView) { deletes++ }
         override fun onAdvanceToNextInputMode(view: KeyboardView) { advances++ }
         override fun onShowInputMethodPicker(view: KeyboardView) { pickerRequests++ }
@@ -129,7 +131,9 @@ class KeyboardViewTest {
         tap(all.first { it.definition.kind == com.thermetery.sanskritkeyboards.core.KeyKind.RETURN })
         tap(all.first { it.definition.kind == com.thermetery.sanskritkeyboards.core.KeyKind.NEXT_KEYBOARD })
         tap(all.first { it.definition.kind == com.thermetery.sanskritkeyboards.core.KeyKind.BACKSPACE })
-        assertEquals(listOf(" ", "\n"), delegate.inserted)
+        assertEquals(listOf("\n"), delegate.inserted)
+        // The space bar reports through its own channel, carrying its primary.
+        assertEquals(listOf(" "), delegate.spaceBars)
         assertEquals(1, delegate.advances)
         // Backspace fires on touch-down, so exactly one delete for one tap.
         assertEquals(1, delegate.deletes)

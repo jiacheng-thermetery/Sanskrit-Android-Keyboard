@@ -1,6 +1,7 @@
 package com.thermetery.sanskritkeyboards
 
 import com.thermetery.sanskritkeyboards.translit.InputResult
+import com.thermetery.sanskritkeyboards.translit.TibetanScript
 import com.thermetery.sanskritkeyboards.translit.TransliterationSession
 import com.thermetery.sanskritkeyboards.translit.WylieToTibetan
 import org.junit.Assert.assertEquals
@@ -121,6 +122,49 @@ class WylieToTibetanTest {
         assertTibetan("ཐུགས", "thugs")     // ཐུགས
         assertTibetan("རྗེ", "rje")             // རྗེ
         assertTibetan("ཆེ", "che")                   // ཆེ
+    }
+
+    // MARK: - Explicit stacks and the space bar
+
+    @Test
+    fun plusBuildsExplicitStacksForLoanwords() {
+        // EWTS: pad+ma is པ then ད capping མ — not the pad-ma the implicit
+        // parser would produce.
+        assertTibetan("པདྨ", "pad+ma")
+        assertTibetan("བཛྲ", "badz+ra")
+        // Without the plus, the implicit reading stands: d is a suffix.
+        assertTibetan("པདམ", "padma")
+    }
+
+    @Test
+    fun plusTypedLiveMatchesTheWholeBuffer() {
+        assertEquals(WylieToTibetan.transliterate("pad+ma"), typeOut("pad+ma"))
+    }
+
+    @Test
+    fun plusExtendsTheBufferInsteadOfCommitting() {
+        val session = TransliterationSession(WylieToTibetan)
+        for (c in "pad+") session.process(c.toString())
+        assertEquals("pad+", session.pendingInput)
+        session.process("m")
+        session.process("a")
+        assertEquals("པདྨ", WylieToTibetan.transliterate(session.pendingInput))
+    }
+
+    @Test
+    fun theSpaceBarIsContextSensitive() {
+        // After a letter, vowel sign or digit: tsheg.
+        assertEquals("་", TibetanScript.spaceBarOutput('ས'))
+        assertEquals("་", TibetanScript.spaceBarOutput('ི'))
+        assertEquals("་", TibetanScript.spaceBarOutput('ྲ'))
+        assertEquals("་", TibetanScript.spaceBarOutput('༣'))
+        // After a shad, a tsheg, a space, or at the start of text: space.
+        assertEquals(" ", TibetanScript.spaceBarOutput('།'))
+        assertEquals(" ", TibetanScript.spaceBarOutput('༎'))
+        assertEquals(" ", TibetanScript.spaceBarOutput('་'))
+        assertEquals(" ", TibetanScript.spaceBarOutput(' '))
+        assertEquals(" ", TibetanScript.spaceBarOutput(null))
+        assertEquals(" ", TibetanScript.spaceBarOutput('a'))
     }
 
     // MARK: - Live typing

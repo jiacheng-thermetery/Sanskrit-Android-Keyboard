@@ -46,6 +46,26 @@ object TibetanScript {
      */
     const val BTAGS = "྄"
 
+    /**
+     * Sentinel for the Sanskrit-mode toggle key. A private-use code point so it
+     * can never collide with real text; the preprocessor always swallows it.
+     */
+    const val SANSKRIT_MODE_TOGGLE = "\uE000"
+
+    /**
+     * What the space bar should insert on a keyboard whose space is the tsheg.
+     *
+     * Tibetan separates *syllables* with a tsheg but wants an actual space
+     * after a shad, so the bar is context-sensitive: after a Tibetan letter,
+     * digit, vowel sign or subjoined letter it gives ་; after ། ༎ ་ or anything
+     * else (including start of text) it gives a space. This is what lets a
+     * sentence end ...ལེགས། and continue without switching keyboards.
+     */
+    fun spaceBarOutput(prev: Char?): String {
+        val cp = prev?.code ?: return " "
+        return if (cp in 0x0F20..0x0FBC) TSHEG else " "
+    }
+
     /** Base consonants occupy this block; their subjoined forms sit 0x50 above. */
     private val baseRange = 0x0F40..0x0F6C
     private const val SUBJOINED_OFFSET = 0x50

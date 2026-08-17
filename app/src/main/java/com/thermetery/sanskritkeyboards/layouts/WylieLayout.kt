@@ -26,7 +26,8 @@ object WylieLayout : KeyboardLayout {
 
     private val lettersLower: List<List<KeyDefinition>> = listOf(
         listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p").map { ch(it) },
-        listOf("a", "s", "d", "f", "g", "h", "j", "k", "l").map { ch(it) } + listOf(ch("'")),
+        listOf("a", "s", "d", "f", "g", "h", "j", "k", "l").map { ch(it) } +
+            listOf(ch("'", listOf("+"))),
         listOf(shiftKey) + listOf("z", "x", "c", "v", "b", "n", "m").map { ch(it) } +
             listOf(backspaceKey),
         wylieBottomRow("༡༢༣"),
@@ -38,7 +39,8 @@ object WylieLayout : KeyboardLayout {
      */
     private val lettersUpper: List<List<KeyDefinition>> = listOf(
         listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P").map { ch(it) },
-        listOf("A", "S", "D", "F", "G", "H", "J", "K", "L").map { ch(it) } + listOf(ch("'")),
+        listOf("A", "S", "D", "F", "G", "H", "J", "K", "L").map { ch(it) } +
+            listOf(ch("'", listOf("+"))),
         listOf(shiftKey) + listOf("Z", "X", "C", "V", "B", "N", "M").map { ch(it) } +
             listOf(backspaceKey),
         wylieBottomRow("༡༢༣"),
@@ -68,10 +70,13 @@ object WylieLayout : KeyboardLayout {
     )
 }
 
-/** Space inserts a tsheg; long-press gives a literal space. */
+/**
+ * The space bar's primary is the tsheg; the service resolves it contextually
+ * (a real space after ། ༎ or an existing ་). Long-press for an explicit space.
+ */
 internal fun wylieBottomRow(modeLabel: String): List<KeyDefinition> = bottomRow(
     modeLabel = modeLabel,
     spacePrimary = "་",
     spaceLabel = "་",
-    spaceAlternates = listOf("་", " "),
+    spaceAlternates = listOf(" "),
 )

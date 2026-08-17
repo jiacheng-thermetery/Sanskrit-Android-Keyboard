@@ -144,9 +144,11 @@ Wylie writes all of that left to right, and the keyboard works out which letter 
 | `lha`     | ལྷ              | falls out of la mgo                                        |
 | `bsgrubs` | བསྒྲུབས | the full stack: prefix, superscript, root, subscript, vowel, suffix, post-suffix |
 
-The **space bar types a tsheg (་)**, since that is what separates Tibetan syllables and what a space means in Wylie. Hold it for a literal space. The apostrophe is on the home row because in Wylie it is a letter (a-chung): `'brug` → འབྲུག.
+The **space bar is context-sensitive**: after a letter, vowel sign or digit it types a tsheg (་) — the syllable boundary a space means in Wylie — and after ། ༎ ་ or at the start of text it types a real space. A sentence can end ...ལེགས། and keep going without switching keyboards. Hold the bar for an explicit space. The apostrophe is on the home row because in Wylie it is a letter (a-chung): `'brug` → འབྲུག.
 
 Capitals are the Sanskrit retroflexes: `T Th D N Sh` → ཊ ཋ ཌ ཎ ཥ.
+
+**Sanskrit loanword stacks** use the EWTS `+` (long-press the apostrophe): the letters joined by `+` form one explicit stack, outside the native rules. `pad+ma` → པདྨ, `badz+ra` → བཛྲ — whereas plain `padma` keeps the native reading, with `d` as a suffix: པདམ.
 
 ## The direct Tibetan keyboard
 
@@ -164,6 +166,12 @@ The letters sit on QWERTY positions phonetically — `k` is ཀ, `g` is ག, `m`
 | `ག` `྄` `ར` `྄` `ཝ` | གྲྭ |
 
 The key lights up while it is armed, and it is one-shot like shift — press it again to cancel. Long-pressing a consonant is the shortcut for the same thing, giving its subjoined form directly.
+
+### Native rules and Sanskrit mode
+
+By default the stacker enforces **native orthography**, using the same superscript/subscript tables the Wylie engine parses with. A pairing no Tibetan word uses — ད under པ, ཀ under ཀ — is refused, and the letter types unstacked instead. In མི་དམངས the ད and མ occupy different structural slots; native words never stack them.
+
+The **ཀྵ key** beside the tsheg toggles **Sanskrit mode**, which lifts those tables for loanwords like པདྨ, where ད genuinely caps མ. The key stays lit while the mode is on, and it survives backspaces and field changes until you toggle it off. Depth is deliberately uncapped in Sanskrit mode: the Kālacakra ten-fold monogram stacks ha kṣa ma la va ra ya, so there is no safe "too deep".
 
 A dedicated tsheg key sits beside the space bar, with ། and ༎ on long-press.
 

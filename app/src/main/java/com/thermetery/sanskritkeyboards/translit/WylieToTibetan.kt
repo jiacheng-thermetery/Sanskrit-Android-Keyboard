@@ -25,7 +25,69 @@ object WylieToTibetan : Transliterator {
     private fun isVowel(token: String): Boolean = token in TibetanScript.vowels
 
     override fun transliterate(input: String): String {
-        val ts = tokenize(input, tokens, maxTokenLen)
+        val groups = groupExplicitStacks(tokenize(input, tokens, maxTokenLen))
+        val out = StringBuilder()
+        val plain = ArrayList<String>()
+        var i = 0
+
+        fun flushPlain() {
+            if (plain.isNotEmpty()) {
+                out.append(renderPlain(plain))
+                plain.clear()
+            }
+        }
+
+        while (i < groups.size) {
+            val g = groups[i]
+            if (g.size > 1) {
+                // An explicit stack: first letter on top in base form, the
+                // rest subjoined beneath, outside the native syllable rules.
+                flushPlain()
+                out.append(TibetanScript.consonants[g[0]] ?: g[0])
+                for (sub in g.drop(1)) out.append(TibetanScript.subjoined(sub) ?: sub)
+                // A vowel directly after the stack attaches to it.
+                val next = groups.getOrNull(i + 1)
+                if (next != null && next.size == 1 && next[0] in TibetanScript.vowels) {
+                    out.append(TibetanScript.vowels[next[0]] ?: "")
+                    i++
+                }
+            } else {
+                plain.add(g[0])
+            }
+            i++
+        }
+        flushPlain()
+        return out.toString()
+    }
+
+    /**
+     * EWTS writes non-native stacks with `+`: `pad+ma` is པ, then ད with མ
+     * subjoined — པདྨ. Native words never need it, so a plus simply glues its
+     * neighbours into one explicit stack and everything else flows through the
+     * ordinary syllable parser.
+     */
+    private fun groupExplicitStacks(ts: List<String>): List<List<String>> {
+        val groups = ArrayList<MutableList<String>>()
+        var i = 0
+        while (i < ts.size) {
+            val t = ts[i]
+            val prev = groups.lastOrNull()
+            if (t == "+" && prev != null &&
+                prev.all { it in TibetanScript.consonants } &&
+                i + 1 < ts.size && ts[i + 1] in TibetanScript.consonants
+            ) {
+                prev.add(ts[i + 1])
+                i += 2
+            } else {
+                groups.add(mutableListOf(t))
+                i += 1
+            }
+        }
+        return groups
+    }
+
+    /** The implicit-orthography parser: everything without a `+`. */
+    private fun renderPlain(ts: List<String>): String {
         val out = StringBuilder()
         var i = 0
 
@@ -154,13 +216,13 @@ object WylieToTibetan : Transliterator {
     }
 
     /**
-     * Wylie letters plus the a-chung apostrophe extend the buffer. The tsheg
-     * from the space key is not a Wylie letter, so it commits — which is
-     * exactly the syllable boundary Tibetan wants.
+     * Wylie letters, the a-chung apostrophe and the EWTS `+` extend the
+     * buffer. The tsheg from the space key is not a Wylie letter, so it
+     * commits — which is exactly the syllable boundary Tibetan wants.
      */
     override fun acceptsIntoBuffer(input: String): Boolean {
         if (input.isEmpty()) return false
-        return input.all { isAsciiLetter(it) || it == '\'' }
+        return input.all { isAsciiLetter(it) || it == '\'' || it == '+' }
     }
 
     /** Case is significant: `T`/`Sh` are the Sanskrit retroflexes, not `t`/`sh`. */

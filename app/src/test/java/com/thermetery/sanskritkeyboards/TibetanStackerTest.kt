@@ -37,10 +37,20 @@ class TibetanStackerTest {
     @Test
     fun itSubjoinsTheFollowingConsonant() {
         val stacker = TibetanStacker()
+        stacker.process("ས")
         stacker.process(TibetanScript.BTAGS)
         // ཀ (U+0F40) becomes subjoined ka (U+0F90), not ka plus a mark.
         assertEquals("ྐ", stacker.process("ཀ"))
         assertFalse("the modifier is one-shot", stacker.isArmed)
+    }
+
+    @Test
+    fun withNothingToStackUnderTheLetterStaysBase() {
+        // ྄ at the start of a syllable has nothing above the next letter,
+        // so in native mode the letter simply types in base form.
+        val stacker = TibetanStacker()
+        stacker.process(TibetanScript.BTAGS)
+        assertEquals("ཀ", stacker.process("ཀ"))
     }
 
     @Test
@@ -91,9 +101,60 @@ class TibetanStackerTest {
     }
 
     @Test
-    fun itAffectsOnlyTheNextKey() {
-        // Only the first ཀ is subjoined; the second is not.
-        assertEquals("ཀྐཀ", type("ཀ", TibetanScript.BTAGS, "ཀ", "ཀ"))
+    fun nativeModeRefusesAStackTheOrthographyForbids() {
+        // ཀ under ཀ is no native pairing: the second ཀ types in base form.
+        assertEquals("ཀཀ", type("ཀ", TibetanScript.BTAGS, "ཀ"))
+        // ད under པ likewise — the པདྨ stack is a Sanskrit loan, not native.
+        assertEquals("པད", type("པ", TibetanScript.BTAGS, "ད"))
+    }
+
+    @Test
+    fun sanskritModeAllowsLoanwordStacks() {
+        val toggle = TibetanScript.SANSKRIT_MODE_TOGGLE
+        // padma: ད caps མ once Sanskrit mode is on.
+        val padma = type("པ", "ད", toggle, TibetanScript.BTAGS, "མ")
+        assertEquals(
+            "expected [${codePoints("པདྨ")}] got [${codePoints(padma)}]",
+            "པདྨ", padma
+        )
+    }
+
+    @Test
+    fun theToggleTypesNothingAndLatchesWhileOn() {
+        val stacker = TibetanStacker()
+        assertNull(stacker.process(TibetanScript.SANSKRIT_MODE_TOGGLE))
+        assertTrue(stacker.sanskritMode)
+        assertTrue(TibetanScript.SANSKRIT_MODE_TOGGLE in stacker.latchedKeys)
+        assertNull(stacker.process(TibetanScript.SANSKRIT_MODE_TOGGLE))
+        assertFalse(stacker.sanskritMode)
+    }
+
+    @Test
+    fun sanskritModeSurvivesReset() {
+        // reset() drops the armed key and stack context on a backspace or
+        // field change; the mode is a user choice and must not vanish with it.
+        val stacker = TibetanStacker()
+        stacker.process(TibetanScript.SANSKRIT_MODE_TOGGLE)
+        stacker.reset()
+        assertTrue(stacker.sanskritMode)
+    }
+
+    @Test
+    fun sanskritModeIsUncappedInDepth() {
+        // The Kalachakra ten-fold monogram stacks seven letters, so depth is
+        // deliberately not policed once Sanskrit mode is on.
+        val toggle = TibetanScript.SANSKRIT_MODE_TOGGLE
+        val deep = type(
+            "ཧ", toggle,
+            TibetanScript.BTAGS, "ཀྵ".substring(0, 1), // kSh is two-cp; use k
+            TibetanScript.BTAGS, "མ",
+            TibetanScript.BTAGS, "ལ",
+            TibetanScript.BTAGS, "ཝ",
+            TibetanScript.BTAGS, "ར",
+            TibetanScript.BTAGS, "ཡ",
+        )
+        // ha + six subjoined letters, in order.
+        assertEquals(7, deep.codePoints().count())
     }
 
     @Test
@@ -111,11 +172,11 @@ class TibetanStackerTest {
     @Test
     fun theKeyReportsItselfLatchedWhileArmed() {
         val stacker = TibetanStacker()
-        assertNull(stacker.latchedKey)
+        assertTrue(stacker.latchedKeys.isEmpty())
         stacker.process(TibetanScript.BTAGS)
-        assertEquals(TibetanScript.BTAGS, stacker.latchedKey)
+        assertTrue(TibetanScript.BTAGS in stacker.latchedKeys)
         stacker.process("ཀ")
-        assertNull(stacker.latchedKey)
+        assertTrue(stacker.latchedKeys.isEmpty())
     }
 
     @Test

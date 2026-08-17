@@ -84,7 +84,10 @@ class PopoverView(
                 )
             }
             textPaint.color = if (isOn) Color.WHITE else Theme.label(dark)
-            canvas.drawText(alt, left + segmentWidth / 2f, baseline, textPaint)
+            // A literal space would render as an invisible (and apparently
+            // dead) segment; show the open-box symbol instead.
+            val shown = if (alt == " ") "␣" else alt
+            canvas.drawText(shown, left + segmentWidth / 2f, baseline, textPaint)
         }
     }
 }

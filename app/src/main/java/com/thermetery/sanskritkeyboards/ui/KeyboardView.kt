@@ -13,6 +13,14 @@ import com.thermetery.sanskritkeyboards.core.ShiftState
 
 interface KeyboardViewDelegate {
     fun onInsertText(view: KeyboardView, text: String)
+
+    /**
+     * The space bar, kept distinct from ordinary inserts because on the
+     * Tibetan keyboards its output is context-sensitive (tsheg vs space) —
+     * a rule that must not apply to an explicit ་ character key.
+     */
+    fun onSpaceBar(view: KeyboardView, primary: String)
+
     fun onDeleteBackward(view: KeyboardView)
     fun onAdvanceToNextInputMode(view: KeyboardView)
     fun onShowInputMethodPicker(view: KeyboardView)
@@ -41,6 +49,10 @@ class KeyboardView(
     private var keyButtons: List<List<KeyButton>> = emptyList()
     private var popover: PopoverView? = null
     private var popoverOriginKey: KeyButton? = null
+
+    // Declared before init: rebuildKeys() runs there and reads this via
+    // applyLatch(), so a later declaration would still be null at that point.
+    private var latchedKeys: Set<String> = emptySet()
 
     private val density = resources.displayMetrics.density
     private val keySpacing = 6f * density
@@ -172,21 +184,20 @@ class KeyboardView(
     private fun View.centerX(): Float = (left + right) / 2f
 
     /**
-     * Latch a character key on, so an armed modifier is visible. Passing null
-     * clears it. Shift is left alone — it manages its own latched state.
+     * Latch character keys on, so armed modifiers and sticky modes are
+     * visible. An empty set clears them. Shift is left alone — it manages its
+     * own latched state.
      */
-    fun setLatchedKey(primary: String?) {
-        latchedKey = primary
+    fun setLatchedKeys(primaries: Set<String>) {
+        latchedKeys = primaries
         applyLatch()
     }
-
-    private var latchedKey: String? = null
 
     private fun applyLatch() {
         for (row in keyButtons) {
             for (key in row) {
                 if (key.definition.kind != KeyKind.CHARACTER) continue
-                key.isActive = latchedKey != null && key.definition.primary == latchedKey
+                key.isActive = key.definition.primary in latchedKeys
             }
         }
     }
@@ -293,8 +304,15 @@ class KeyboardView(
             is KeyAction.Insert -> handleInsertion(action.text)
             KeyAction.Backspace -> delegate?.onDeleteBackward(this)
             KeyAction.Return -> handleInsertion("\n")
-            // Not hard-coded to " ": Tibetan's space bar inserts a tsheg.
-            KeyAction.Space -> handleInsertion(button.definition.primary)
+            // Routed separately from Insert: the service may resolve the
+            // space bar contextually (tsheg after a letter, space after །).
+            KeyAction.Space -> {
+                delegate?.onSpaceBar(this, button.definition.primary)
+                if (shiftState == ShiftState.ON) {
+                    shiftState = ShiftState.OFF
+                    rebuildKeys()
+                }
+            }
             KeyAction.NextKeyboard -> delegate?.onAdvanceToNextInputMode(this)
             KeyAction.ShowInputMethodPicker -> delegate?.onShowInputMethodPicker(this)
             KeyAction.Shift -> toggleShift()

@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager
 import com.thermetery.sanskritkeyboards.core.KeyboardLayout
 import com.thermetery.sanskritkeyboards.translit.InputResult
 import com.thermetery.sanskritkeyboards.translit.KeyPreprocessor
+import com.thermetery.sanskritkeyboards.translit.TibetanScript
 import com.thermetery.sanskritkeyboards.translit.TransliterationSession
 import com.thermetery.sanskritkeyboards.translit.Transliterator
 import com.thermetery.sanskritkeyboards.ui.KeyboardView
@@ -72,7 +73,8 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
         keyboardView?.desiredHeightPx = targetHeightPx()
         session?.reset()
         preprocessor?.reset()
-        keyboardView?.setLatchedKey(null)
+        // Sticky modes (Sanskrit) survive a reset and stay lit.
+        keyboardView?.setLatchedKeys(preprocessor?.latchedKeys ?: emptySet())
     }
 
     override fun onFinishInput() {
@@ -116,17 +118,38 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
     // MARK: - KeyboardViewDelegate
 
     override fun onInsertText(view: KeyboardView, text: String) {
-        val ic = currentInputConnection ?: return
         if (text == "\n") {
             handleReturn()
             return
         }
+        deliver(view, text)
+    }
 
-        // A modifier key (Tibetan's btags) may swallow this press or rewrite it
-        // into a different character entirely.
+    /**
+     * The space bar. On the Tibetan keyboards its primary is the tsheg, and
+     * what it should actually insert depends on what precedes the cursor —
+     * tsheg between syllables, a real space after a shad — so the sentence
+     * ...ལེགས། can continue without switching keyboards.
+     */
+    override fun onSpaceBar(view: KeyboardView, primary: String) {
+        val resolved = if (primary == TibetanScript.TSHEG) {
+            val before = currentInputConnection?.getTextBeforeCursor(1, 0)
+            TibetanScript.spaceBarOutput(before?.lastOrNull())
+        } else {
+            primary
+        }
+        deliver(view, resolved)
+    }
+
+    /** Common insert path: modifier preprocessing, then the transliterator. */
+    private fun deliver(view: KeyboardView, text: String) {
+        val ic = currentInputConnection ?: return
+
+        // A modifier key (Tibetan's btags, the Sanskrit-mode toggle) may
+        // swallow this press or rewrite it into a different character.
         val pre = preprocessor
         val resolved: String? = if (pre != null) pre.process(text) else text
-        pre?.let { view.setLatchedKey(it.latchedKey) }
+        pre?.let { view.setLatchedKeys(it.latchedKeys) }
         if (resolved == null) return
 
         val s = session
@@ -145,6 +168,14 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
 
     override fun onDeleteBackward(view: KeyboardView) {
         val ic = currentInputConnection ?: return
+
+        // Deleting invalidates the stacker's memory of what precedes the
+        // cursor, so drop its transient state (armed key, stack context).
+        preprocessor?.let {
+            it.reset()
+            view.setLatchedKeys(it.latchedKeys)
+        }
+
         val hasSelection = !ic.getSelectedText(0).isNullOrEmpty()
         when (val plan = planBackspace(hasSelection, session)) {
             is BackspacePlan.Compose -> ic.setComposingText(plan.text, 1)
