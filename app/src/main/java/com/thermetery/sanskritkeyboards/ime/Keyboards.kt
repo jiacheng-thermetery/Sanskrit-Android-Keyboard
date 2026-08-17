@@ -6,6 +6,8 @@ import com.thermetery.sanskritkeyboards.layouts.IastLayout
 import com.thermetery.sanskritkeyboards.layouts.TibetanLayout
 import com.thermetery.sanskritkeyboards.layouts.VelthuisLayout
 import com.thermetery.sanskritkeyboards.layouts.WylieLayout
+import com.thermetery.sanskritkeyboards.translit.KeyPreprocessor
+import com.thermetery.sanskritkeyboards.translit.TibetanStacker
 import com.thermetery.sanskritkeyboards.translit.WylieToTibetan
 import com.thermetery.sanskritkeyboards.translit.HkToDevanagari
 import com.thermetery.sanskritkeyboards.translit.HkToIast
@@ -66,4 +68,7 @@ class WylieTibetanKeyboardService : SanskritInputMethodService() {
 class TibetanKeyboardService : SanskritInputMethodService() {
     override val keyboardLayout: KeyboardLayout = TibetanLayout
     override val reservesPopoverHeadroom: Boolean = true
+
+    // The ྄ key stacks the following consonant rather than typing a mark.
+    override val preprocessor: KeyPreprocessor = TibetanStacker()
 }

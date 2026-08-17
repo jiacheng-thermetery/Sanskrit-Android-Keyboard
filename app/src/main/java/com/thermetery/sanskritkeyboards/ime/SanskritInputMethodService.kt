@@ -8,6 +8,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import com.thermetery.sanskritkeyboards.core.KeyboardLayout
 import com.thermetery.sanskritkeyboards.translit.InputResult
+import com.thermetery.sanskritkeyboards.translit.KeyPreprocessor
 import com.thermetery.sanskritkeyboards.translit.TransliterationSession
 import com.thermetery.sanskritkeyboards.translit.Transliterator
 import com.thermetery.sanskritkeyboards.ui.KeyboardView
@@ -27,6 +28,12 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
 
     /** Null for the plain IAST keyboard — it types its characters literally. */
     protected open val scheme: Transliterator? = null
+
+    /**
+     * Optional modifier-key filter. The direct Tibetan keyboard uses one for
+     * its btags key, which makes the following consonant subjoined.
+     */
+    protected open val preprocessor: KeyPreprocessor? = null
 
     /**
      * The IAST keyboard leans on long-press popovers for every diacritic, so it
@@ -64,12 +71,15 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
         super.onStartInputView(info, restarting)
         keyboardView?.desiredHeightPx = targetHeightPx()
         session?.reset()
+        preprocessor?.reset()
+        keyboardView?.setLatchedKey(null)
     }
 
     override fun onFinishInput() {
         super.onFinishInput()
         currentInputConnection?.finishComposingText()
         session?.reset()
+        preprocessor?.reset()
     }
 
     /**
@@ -111,12 +121,20 @@ abstract class SanskritInputMethodService : InputMethodService(), KeyboardViewDe
             handleReturn()
             return
         }
+
+        // A modifier key (Tibetan's btags) may swallow this press or rewrite it
+        // into a different character entirely.
+        val pre = preprocessor
+        val resolved: String? = if (pre != null) pre.process(text) else text
+        pre?.let { view.setLatchedKey(it.latchedKey) }
+        if (resolved == null) return
+
         val s = session
         if (s == null) {
-            ic.commitText(text, 1)
+            ic.commitText(resolved, 1)
             return
         }
-        when (val result = s.process(text)) {
+        when (val result = s.process(resolved)) {
             is InputResult.Compose -> ic.setComposingText(result.text, 1)
             is InputResult.Commit -> {
                 ic.finishComposingText()

@@ -40,12 +40,31 @@ object TibetanScript {
     )
 
     /**
+     * The btags key: arms the next consonant to come out subjoined, so that a
+     * stack can be built by hand. It is a modifier, not a character — nothing
+     * is inserted when it is pressed.
+     */
+    const val BTAGS = "྄"
+
+    /** Base consonants occupy this block; their subjoined forms sit 0x50 above. */
+    private val baseRange = 0x0F40..0x0F6C
+    private const val SUBJOINED_OFFSET = 0x50
+
+    /**
      * Subjoined forms sit exactly 0x50 above their base in Unicode, so they are
      * derived rather than tabulated — that keeps the two tables from drifting.
      */
     fun subjoined(wylie: String): String? {
         val base = consonants[wylie] ?: return null
-        return String(Character.toChars(base.codePointAt(0) + 0x50))
+        return subjoinedForm(base)
+    }
+
+    /** The subjoined form of an already-rendered base letter, or null. */
+    fun subjoinedForm(base: String): String? {
+        if (base.codePointCount(0, base.length) != 1) return null
+        val cp = base.codePointAt(0)
+        if (cp !in baseRange) return null
+        return String(Character.toChars(cp + SUBJOINED_OFFSET))
     }
 
     /** Vowel signs. `a` is inherent in the consonant and marks nothing. */

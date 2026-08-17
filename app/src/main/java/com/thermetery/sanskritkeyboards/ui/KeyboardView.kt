@@ -81,6 +81,8 @@ class KeyboardView(
                 }
             }
         }
+        // Rebuilding replaced the views, so re-apply any armed modifier.
+        applyLatch()
         requestLayout()
     }
 
@@ -168,6 +170,26 @@ class KeyboardView(
     }
 
     private fun View.centerX(): Float = (left + right) / 2f
+
+    /**
+     * Latch a character key on, so an armed modifier is visible. Passing null
+     * clears it. Shift is left alone — it manages its own latched state.
+     */
+    fun setLatchedKey(primary: String?) {
+        latchedKey = primary
+        applyLatch()
+    }
+
+    private var latchedKey: String? = null
+
+    private fun applyLatch() {
+        for (row in keyButtons) {
+            for (key in row) {
+                if (key.definition.kind != KeyKind.CHARACTER) continue
+                key.isActive = latchedKey != null && key.definition.primary == latchedKey
+            }
+        }
+    }
 
     // MARK: - State changes
 

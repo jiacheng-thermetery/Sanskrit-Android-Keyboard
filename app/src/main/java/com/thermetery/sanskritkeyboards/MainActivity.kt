@@ -96,7 +96,7 @@ class MainActivity : Activity() {
         divider()
         keyboardRow("Wylie → Tibetan", "Type Wylie, see Tibetan appear live (bkra shis → བཀྲ་ཤིས་).")
         divider()
-        keyboardRow("Tibetan", "The letters directly on phonetic QWERTY positions. Hold a consonant for its subjoined form.")
+        keyboardRow("Tibetan", "Phonetic QWERTY positions. The ྄ key stacks: ལ ྄ ཧ gives ལྷ.")
     }
 
     private fun LinearLayout.keyboardRow(name: String, subtitle: String) {

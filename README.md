@@ -148,6 +148,25 @@ The **space bar types a tsheg (་)**, since that is what separates Tibetan syll
 
 Capitals are the Sanskrit retroflexes: `T Th D N Sh` → ཊ ཋ ཌ ཎ ཥ.
 
+## The direct Tibetan keyboard
+
+The letters sit on QWERTY positions phonetically — `k` is ཀ, `g` is ག, `m` is མ — with `e u i o` carrying the four vowel signs and the aspirates on shift (`K` is ཁ, `C` is ཆ, `T` is ཐ, `P` is ཕ, `V` is ཚ). Shift also carries the Sanskrit retroflexes ཊ ཋ ཌ ཎ ཥ, the subjoined ྲ ྱ ྭ ླ, and ཿ ཾ.
+
+### Stacking: the ྄ key
+
+`q` is the **btags** (་འདོགས) modifier. It is not a virama — Tibetan has no vowel-killer. It means *put the next letter underneath the last one*, and it types nothing by itself:
+
+| Keys              | Result |
+|-------------------|--------|
+| `ལ` `྄` `ཧ`      | ལྷ  |
+| `ས` `྄` `ཀ` `ུ` | སྐུ |
+| `ར` `྄` `ཀ`      | རྐ  |
+| `ག` `྄` `ར` `྄` `ཝ` | གྲྭ |
+
+The key lights up while it is armed, and it is one-shot like shift — press it again to cancel. Long-pressing a consonant is the shortcut for the same thing, giving its subjoined form directly.
+
+A dedicated tsheg key sits beside the space bar, with ། and ༎ on long-press.
+
 ## Build
 
 You need a JDK 17+ and the Android SDK (platform 34, build-tools 34). No Android Studio required.
