@@ -99,16 +99,27 @@ class KeyButton(
             cornerRadius, cornerRadius, shadowPaint
         )
 
+        // A latched character key (an armed modifier, a sticky mode like
+        // Sanskrit) highlights in blue: the white "active" treatment shift
+        // uses is invisible on a character key in light theme, whose resting
+        // colour is already white.
+        val isLatchedCharacter = isActive && definition.kind == KeyKind.CHARACTER
+
         backgroundPaint.color = when {
             keyPressed -> Theme.pressedKey(dark)
+            isLatchedCharacter -> Theme.popoverHighlight
             isActive -> Theme.activeKey(dark)
             else -> baseBackgroundColor(dark)
         }
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, backgroundPaint)
 
-        // The active (latched shift) key inverts its label, as on iOS.
-        textPaint.color =
-            if (isActive && !keyPressed) android.graphics.Color.BLACK else Theme.label(dark)
+        // Latched keys invert their label: white on the blue highlight,
+        // black on shift's white.
+        textPaint.color = when {
+            isLatchedCharacter && !keyPressed -> android.graphics.Color.WHITE
+            isActive && !keyPressed -> android.graphics.Color.BLACK
+            else -> Theme.label(dark)
+        }
 
         val label = definition.label
         // Shrink-to-fit, floor at 0.6× like `minimumScaleFactor` on iOS.

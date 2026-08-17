@@ -288,6 +288,32 @@ class KeyboardViewTest {
     }
 
     @Test
+    fun latchingMarksExactlyTheLatchedKeysActive() {
+        val (view, _) = build(
+            com.thermetery.sanskritkeyboards.layouts.TibetanLayout, headroom = true
+        )
+        val toggle = com.thermetery.sanskritkeyboards.translit.TibetanScript.SANSKRIT_MODE_TOGGLE
+        val btags = com.thermetery.sanskritkeyboards.translit.TibetanScript.BTAGS
+
+        view.setLatchedKeys(setOf(toggle))
+        assertTrue(
+            "the Sanskrit-mode key did not latch",
+            keys(view).first { it.definition.primary == toggle }.isActive
+        )
+        assertFalse(
+            "an unrelated key latched",
+            keys(view).first { it.definition.primary == btags }.isActive
+        )
+
+        // Both a mode and an armed modifier can be lit at once.
+        view.setLatchedKeys(setOf(toggle, btags))
+        assertTrue(keys(view).first { it.definition.primary == btags }.isActive)
+
+        view.setLatchedKeys(emptySet())
+        assertFalse(keys(view).first { it.definition.primary == toggle }.isActive)
+    }
+
+    @Test
     fun landscapeGeometryStaysInBounds() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val view = KeyboardView(activity, IastLayout, true)
